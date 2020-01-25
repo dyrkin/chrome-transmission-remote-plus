@@ -15,10 +15,10 @@ function showBadge(text, color, duration) {
 
   duration = (typeof duration == 'undefined') ? localStorage.browserbadgetimeout : duration;
 
-  chrome.browserAction.setBadgeBackgroundColor({color: color});
-  chrome.browserAction.setBadgeText({text: text});
+  browser.browserAction.setBadgeBackgroundColor({color: color});
+  browser.browserAction.setBadgeText({text: text});
 
-  setTimeout(function () { chrome.browserAction.setBadgeText({text: ''}); }, duration);
+  setTimeout(function () { browser.browserAction.setBadgeText({text: ''}); }, duration);
 }
 
 /**
@@ -36,7 +36,7 @@ function showNotification(title, message) {
   };
 
   if (localStorage.notificationsnewtorrent === 'true') {
-    chrome.notifications.create(options);
+    browser.notifications.create(options);
   }
 }
 
@@ -62,7 +62,7 @@ function rpcTransmission(args, method, tag, callback) {
     }
   })
   .fail(function (jqXHR, textStatus, errorThrown) {
-    if (errorThrown === 'Conflict') {
+    if (jqXHR.status == 409 || errorThrown === 'Conflict') {
       // X-Transmission-Session-Id should only be included if we didn't include it when we sent our request
       let xSid = jqXHR.getResponseHeader('X-Transmission-Session-Id');
       localStorage.sessionId = xSid;
@@ -172,7 +172,7 @@ function getTorrent(url) {
   } else if (url.toLowerCase().indexOf('magnet:') === 0) { // it's a magnet
   // don't use base64 on magnet links
     torrentInfo['magnet'] = {dirs: dirs, url: url};
-    chrome.windows.create({
+    browser.windows.create({
       url    : 'downloadMagnet.html',
       type   : 'popup',
       width  : 852,
@@ -186,7 +186,7 @@ function getTorrent(url) {
         if (torrent !== null) {
           encodeFile(file, function (data) {
             torrentInfo['torrent'] = {torrent: torrent, data: data, dirs: dirs};
-            chrome.windows.create({
+            browser.windows.create({
               url    : 'downloadTorrent.html',
               type   : 'popup',
               width  : 850,
@@ -225,7 +225,7 @@ function notificationRefresh() {
 /*
  * receive messages from other parts of the script
  */
-chrome.extension.onConnect.addListener(function (port) {
+browser.runtime.onConnect.addListener(function (port) {
   switch (port.name) {
     case 'popup':
       port.onMessage.addListener(function (msg) {
@@ -291,7 +291,7 @@ chrome.extension.onConnect.addListener(function (port) {
 /**
  * recieve message to send torrent to transmission
  */
-chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
+browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.method === 'get-torrent-info') {
     sendResponse(torrentInfo[request.page]);
   } else {
@@ -312,7 +312,7 @@ function contextMenuClick(info) {
 /**
  * Add link context menu option
  */
-chrome.contextMenus.create({
+browser.contextMenus.create({
   title    : 'Download with Remote Transmission',
   contexts : ['link'],
   onclick  : contextMenuClick,
@@ -330,19 +330,19 @@ chrome.contextMenus.create({
 
   // make sure users are up-to-date with their config
   //                first install                                           upgraded extension major version
-  if (typeof (localStorage.version) == 'undefined' || chrome.runtime.getManifest().version.split('.')[0] !== localStorage.version.split('.')[0]) {
-    chrome.tabs.create({url: 'options.html?newver=true'});
+  if (typeof (localStorage.version) == 'undefined' || browser.runtime.getManifest().version.split('.')[0] !== localStorage.version.split('.')[0]) {
+    browser.tabs.create({url: 'options.html?newver=true'});
   }
 
   // This function runs when the extension is first loaded.
   // If that's after tabs are already open, then we need to inject our script into them, or they won't pick up torrent/magnet link clicks.
-  chrome.windows.getAll({populate: true}, function (windows) {
+  browser.windows.getAll({populate: true}, function (windows) {
     for (let i = 0; i < windows.length; i++) {
       for (let j = 0; j < windows[i].tabs.length; j++) {
         if (windows[i].tabs[j].url.substr(0, 4) === 'http') {
           // Chrome will throw an error here if the user has the chrome://extensions window open,
           // despite the fact that we don't inject the script to that tab.
-          chrome.tabs.executeScript(windows[i].tabs[j].id, {file: 'js/inject.js'});
+          browser.tabs.executeScript(windows[i].tabs[j].id, {file: 'js/inject.js'});
         }
       }
     }

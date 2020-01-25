@@ -70,11 +70,11 @@ jQuery(function ($) {
     event.stopPropagation();
   });
   $(document.body).on('click', '#uploadBasket', function () {
-    chrome.windows.create({url: 'basket.html', type: 'popup', width: 384, height: 384});
+    browser.windows.create({url: 'basket.html', type: 'popup', width: 384, height: 384});
     $('#menu_button').click();
   });
   $(document.body).on('click', '#fullWebUI', function () {
-    chrome.tabs.create({url: localStorage.server + localStorage.webPath});
+    browser.tabs.create({url: localStorage.server + localStorage.webPath});
     $('#menu_button').click();
   });
 

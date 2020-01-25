@@ -1,5 +1,5 @@
 // communication port with background page
-var port = chrome.extension.connect({name: 'options'});
+var port = browser.runtime.connect({name: 'options'});
 
 // add custom download directory to table
 /* =================================================================================
@@ -111,7 +111,7 @@ function save() {
   }
   localStorage.dirs = JSON.stringify(dirs);
 
-  localStorage.version = chrome.runtime.getManifest().version;
+  localStorage.version = browser.runtime.getManifest().version;
 
   // send message to background that options were saved
   port.postMessage({method: 'settings-saved'});

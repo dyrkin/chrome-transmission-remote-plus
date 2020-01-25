@@ -4,9 +4,9 @@ function addTorrent(file) {
 
   parseTorrent(file, function (torrent) {
     if (torrent !== null) {
-      chrome.windows.create({url: 'downloadTorrent.html', type: 'popup', width: 852, height: 583}, function (w) {
+      browser.windows.create({url: 'downloadTorrent.html', type: 'popup', width: 852, height: 583}, function (w) {
         encodeFile(file, function (data) {
-          chrome.tabs.sendMessage(w.tabs[0].id, {torrent: torrent, data: data, dirs: dirs});
+          browser.tabs.sendMessage(w.tabs[0].id, {torrent: torrent, data: data, dirs: dirs});
         });
       });
     } else {
@@ -44,7 +44,7 @@ function discard(e) {
   var dropbox = jQuery('#dropbox');
 
   window.onUnload = function () {
-    chrome.browserAction.setBadgeText({text: ''});
+    browser.browserAction.setBadgeText({text: ''});
   };
 
   dropbox.addEventListener('dragenter', discard, false);

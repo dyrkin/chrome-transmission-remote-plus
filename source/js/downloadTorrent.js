@@ -1,6 +1,6 @@
 var selectNewDirectoryIndex = 1;
 const TAG_DOWNLOAD_DIR = 1;
-var port = chrome.extension.connect({name: 'downloadTorrent'});
+var port = browser.runtime.connect({name: 'downloadTorrent'});
 
 // credit to: http://web.elctech.com/2009/01/06/convert-filesize-bytes-to-readable-string-in-javascript/
 // modified to allow for 0 bytes and removed extraneous Math.floor
@@ -106,7 +106,7 @@ function sortFiles(a, b) {
 }
 
 // populate the download popup with the torrent information
-chrome.extension.sendMessage({method: 'get-torrent-info', page: 'torrent'}, function (request) {
+browser.runtime.sendMessage({method: 'get-torrent-info', page: 'torrent'}, function (request) {
   var select = jQuery('#downloadLocations');
   var newLabel = jQuery('#newLabel');
   var newDirectory = jQuery('#newDirectory');
@@ -121,7 +121,8 @@ chrome.extension.sendMessage({method: 'get-torrent-info', page: 'torrent'}, func
   var name = decodeString(request.torrent.info.name);
 
   // add the name of the torrent
-  jQuery('#torrentName').innerHTML = name;
+  let torrent = jQuery('#torrentName')
+  torrent.textContent = name;
 
   // add the list of download directories
   if (request.dirs.length === 0) {
@@ -237,7 +238,7 @@ chrome.extension.sendMessage({method: 'get-torrent-info', page: 'torrent'}, func
     } else {
       message.dir = select.val();
     }
-    chrome.extension.sendMessage(message);
+    browser.runtime.sendMessage(message);
     window.close();
   });
 
